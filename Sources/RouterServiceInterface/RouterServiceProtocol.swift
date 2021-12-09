@@ -35,6 +35,16 @@ public protocol RouterServiceRegistrationProtocol {
     func register(routeHandler: RouteHandler)
 }
 
+@available(iOS 13.0, *)
+public extension RouterServiceRegistrationProtocol {
+    func registerViewRouterService() {
+        register(
+            dependencyFactory: ViewRouterService.init,
+            forType: ViewRouterServiceProtocol.self
+        )
+    }
+}
+
 public protocol RouterServiceScopeProtocol {
     func register(scope: String)
     func enter(scope: String)

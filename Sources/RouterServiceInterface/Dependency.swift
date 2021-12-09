@@ -37,6 +37,9 @@ public final class Dependency<T>: Resolvable {
             failureHandler("Attempted to resolve \(type(of: self)), but there's nothing registered for this type.")
             return
         }
+        if let resolvableValue = value as? Resolvable {
+            resolvableValue.resolve(withStore: store)
+        }
         resolvedValue = value
     }
 }
