@@ -1,5 +1,6 @@
-import RouterServiceInterface
 import UIKit
+
+@testable import RouterServiceInterface
 
 protocol MockDependencyProtocol {}
 
@@ -9,6 +10,16 @@ enum RouterServiceDoubles {
     }
     struct MockRoute: Route {
         public static let identifier: String = "mockRoute"
+    }
+}
+
+extension RouterServiceDoubles {
+    final class MockConcreteResolvableDependency: MockDependencyProtocol, Resolvable {
+        private(set) var invokedResolve: Bool = false
+
+        func resolve(withStore _: StoreInterface) {
+            invokedResolve = true
+        }
     }
 }
 

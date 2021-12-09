@@ -1,6 +1,6 @@
 import XCTest
-import RouterServiceInterface
 
+@testable import RouterServiceInterface
 @testable import RouterService
 
 final class RouterServiceTests: XCTestCase {
@@ -10,6 +10,14 @@ final class RouterServiceTests: XCTestCase {
         let storedInstance = service.store.get(RouterServiceProtocol.self)
 
         XCTAssertTrue(service === storedInstance as? RouterService)
+    }
+
+    func test_routerService_registersViewRouterServiceByProtocol() {
+        let service = RouterService()
+        service.registerViewRouterService()
+
+        let storedInstance = service.store.get(ViewRouterServiceProtocol.self)
+        XCTAssertNotNil(storedInstance as? ViewRouterService)
     }
 
     func test_routerServiceRegister_callsStore() {

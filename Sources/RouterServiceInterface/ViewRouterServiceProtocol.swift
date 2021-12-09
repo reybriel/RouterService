@@ -4,14 +4,15 @@ import UIKit
 
 @available(iOS 13.0, *)
 public protocol ViewRouterServiceProtocol: AnyObject {
-    var viewController: UIViewController? { get set }
-
     func navigate(
         toRoute: Route,
         presentationStyle: PresentationStyle,
         animated: Bool,
         completion: (() -> Void)?
     )
+    func buildController<T: View>(
+        rootView: T
+    ) -> UIViewController
 }
 
 @available(iOS 13.0, *)
@@ -28,18 +29,20 @@ public extension ViewRouterServiceProtocol {
             completion: nil
         )
     }
-
-    func buildController<T: View>(rootView: T) -> UIViewController {
-        let viewController = UIHostingController(rootView: rootView)
-        self.viewController = viewController
-        return viewController
-    }
 }
 
 @available(iOS 13.0, *)
 final class ViewRouterService: ViewRouterServiceProtocol, Resolvable {
-    private var routerService: RouterServiceProtocol?
-    weak var viewController: UIViewController?
+    private let failureHandler: () -> Void
+
+    private(set) weak var routerService: RouterServiceProtocol?
+    private(set) weak var viewController: UIViewController?
+
+    init(
+        failureHandler: @escaping () -> Void = { preconditionFailure() }
+    ) {
+        self.failureHandler = failureHandler
+    }
 
     func navigate(
         toRoute route: Route,
@@ -48,7 +51,7 @@ final class ViewRouterService: ViewRouterServiceProtocol, Resolvable {
         completion: (() -> Void)?
     ) {
         guard let routerService = routerService, let viewController = viewController else {
-            preconditionFailure("Router service and destination view controller are needed for navigating!")
+            return failureHandler()
         }
 
         routerService.navigate(
@@ -60,9 +63,15 @@ final class ViewRouterService: ViewRouterServiceProtocol, Resolvable {
         )
     }
 
+    func buildController<T: View>(rootView: T) -> UIViewController {
+        let viewController = UIHostingController(rootView: rootView)
+        self.viewController = viewController
+        return viewController
+    }
+
     func resolve(withStore store: StoreInterface) {
         guard let routerService = store.get(RouterServiceProtocol.self) else {
-            preconditionFailure("Expected to find RouterServiceProtocol registered in store!")
+            return failureHandler()
         }
 
         self.routerService = routerService

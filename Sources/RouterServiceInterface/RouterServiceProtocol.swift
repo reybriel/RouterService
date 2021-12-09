@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-public protocol RouterServiceProtocol: RouterServiceAnyRouteDecodingProtocol {
+public protocol RouterServiceProtocol: AnyObject, RouterServiceAnyRouteDecodingProtocol {
     func navigate(
         toRoute route: Route,
         fromView viewController: UIViewController,
@@ -39,7 +39,7 @@ public protocol RouterServiceRegistrationProtocol {
 public extension RouterServiceRegistrationProtocol {
     func registerViewRouterService() {
         register(
-            dependencyFactory: ViewRouterService.init,
+            dependencyFactory: { ViewRouterService() },
             forType: ViewRouterServiceProtocol.self
         )
     }

@@ -6,6 +6,7 @@ import XCTest
 final class DependencyTests: XCTestCase {
 
     typealias MockConcreteDependency = RouterServiceDoubles.MockConcreteDependency
+    typealias MockConcreteResolvableDependency = RouterServiceDoubles.MockConcreteResolvableDependency
 
     func test_dependency_crashesIfNotRegistered() {
         let store = Store()
@@ -36,6 +37,19 @@ final class DependencyTests: XCTestCase {
 
         XCTAssertTrue(dependency.resolvedValue === concreteDep)
         XCTAssertTrue(dependency.wrappedValue === dependency.resolvedValue)
+    }
+
+    func test_dependency_resolvesResolvableChilds() {
+        let concreteDep = MockConcreteResolvableDependency()
+
+        let store = Store()
+        store.register({ concreteDep }, forMetaType: MockConcreteResolvableDependency.self)
+
+        let dependency = Dependency<MockConcreteResolvableDependency>(resolvedValue: nil)
+        dependency.resolve(withStore: store)
+
+        XCTAssertTrue(concreteDep.invokedResolve)
+        XCTAssertTrue(concreteDep === dependency.wrappedValue)
     }
 
     func test_dependency_crashesIfResolvedTwice() {
