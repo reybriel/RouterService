@@ -4,8 +4,9 @@ import UIKit
 
 @available(iOS 13.0, *)
 public protocol ViewRouterServiceProtocol: AnyObject {
-    func navigate(
+    func navigate<T: View>(
         toRoute: Route,
+        fromView: T.Type,
         presentationStyle: PresentationStyle,
         animated: Bool,
         completion: (() -> Void)?
@@ -17,13 +18,15 @@ public protocol ViewRouterServiceProtocol: AnyObject {
 
 @available(iOS 13.0, *)
 public extension ViewRouterServiceProtocol {
-    func navigate(
+    func navigate<T: View>(
         toRoute route: Route,
+        fromView view: T.Type,
         presentationStyle: PresentationStyle,
         animated: Bool
     ) {
         navigate(
             toRoute: route,
+            fromView: view,
             presentationStyle: presentationStyle,
             animated: animated,
             completion: nil
@@ -34,9 +37,12 @@ public extension ViewRouterServiceProtocol {
 @available(iOS 13.0, *)
 final class ViewRouterService: ViewRouterServiceProtocol, Resolvable {
     private let failureHandler: () -> Void
+    private let viewControllers = NSMapTable<NSString, UIViewController>(
+        keyOptions: .strongMemory,
+        valueOptions: .weakMemory
+    )
 
     private(set) weak var routerService: RouterServiceProtocol?
-    private(set) weak var viewController: UIViewController?
 
     init(
         failureHandler: @escaping () -> Void = { preconditionFailure() }
@@ -44,13 +50,19 @@ final class ViewRouterService: ViewRouterServiceProtocol, Resolvable {
         self.failureHandler = failureHandler
     }
 
-    func navigate(
+    func navigate<T: View>(
         toRoute route: Route,
+        fromView _: T.Type,
         presentationStyle: PresentationStyle,
         animated: Bool,
         completion: (() -> Void)?
     ) {
-        guard let routerService = routerService, let viewController = viewController else {
+        let identifier = String(describing: T.self) as NSString
+
+        guard
+            let routerService = routerService,
+            let viewController = viewControllers.object(forKey: identifier)
+        else {
             return failureHandler()
         }
 
@@ -65,7 +77,11 @@ final class ViewRouterService: ViewRouterServiceProtocol, Resolvable {
 
     func buildController<T: View>(rootView: T) -> UIViewController {
         let viewController = UIHostingController(rootView: rootView)
-        self.viewController = viewController
+
+        // BUG: Impossible to push two views of the same type
+        let identifier = String(describing: T.self) as NSString
+        viewControllers.setObject(viewController, forKey: identifier)
+
         return viewController
     }
 

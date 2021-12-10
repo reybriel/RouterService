@@ -39,7 +39,7 @@ final class ViewRouterServiceTests: XCTestCase {
         })
 
         let route = RouterServiceDoubles.MockRouteFromFooHandler()
-        viewRouterService.navigate(toRoute: route, presentationStyle: Push(), animated: false)
+        viewRouterService.navigate(toRoute: route, fromView: DummyView.self, presentationStyle: Push(), animated: false)
 
         XCTAssertTrue(didFail)
     }
@@ -56,7 +56,7 @@ final class ViewRouterServiceTests: XCTestCase {
         })
 
         let route = RouterServiceDoubles.MockRouteFromFooHandler()
-        viewRouterService.navigate(toRoute: route, presentationStyle: Push(), animated: false)
+        viewRouterService.navigate(toRoute: route, fromView: DummyView.self, presentationStyle: Push(), animated: false)
 
         XCTAssertTrue(didFail)
     }
@@ -72,7 +72,7 @@ final class ViewRouterServiceTests: XCTestCase {
         let viewController = viewRouterService.buildController(rootView: DummyView())
 
         let route = RouterServiceDoubles.MockRouteFromFooHandler()
-        viewRouterService.navigate(toRoute: route, presentationStyle: Push(), animated: false)
+        viewRouterService.navigate(toRoute: route, fromView: DummyView.self, presentationStyle: Push(), animated: false)
 
         XCTAssertTrue(routerServiceSpy.invokedNavigate)
         XCTAssertTrue(routerServiceSpy.viewController === viewController)
